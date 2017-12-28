@@ -35,7 +35,7 @@
 #include <QSpacerItem>
 #include <QCoreApplication>
 #include <QMediaMetaData>
-
+#include <QMessageBox>
 
 class MusicPlayer : public QWidget
 {
@@ -49,26 +49,34 @@ public:
     void mouseMoveEvent(QMouseEvent *);
     void mousePressEvent(QMouseEvent *);
 
+    //bool playStatus;//目前歌曲播放状态
+
 protected:
 //    void closeEvent(QCloseEvent *);
+    void closeEvent(QCloseEvent *event);
 
 public slots:
-    void changslider();
-    void changplaystyle(int );
-    void playstate();
-    void playstop();
-    void nextplay();
-    void lastplay();
-    QStringList readfile();
+    void changeSlider();
+    void changePlaystyle(int index);
+    void playStart();
+    void playStop();
+    void nextMusic();
+    void prevMusic();
     void changeMusic(int,int);
     void changeSkin();
     void updateMusicNameLabel(int);
-    void updateslider();
+    void updateSlider();
+    QStringList readFile();
+
+    void systemTrayOperation(QSystemTrayIcon::ActivationReason);
+    void showTrayMenu();
+    void showWindow();
+    void closeWindow();
 
 private:
     QTimer* timer;
 
-    QSystemTrayIcon* trayicon;
+    QSystemTrayIcon* systemTray;
     QPoint dpos;
     QPoint windowPos;
     QPoint  mousePos;
@@ -93,9 +101,18 @@ private:
     QVideoWidget* videoWidget;
     QLabel* musicNameLabel;
 
+    QMenu *trayMenu;//托盘菜单
+    QAction *showWin;//显示主页面
+    QAction *prevOne;//上一曲
+    QAction *nextOne;//下一曲
+    QAction *startOne;//开始
+    QAction *stopOne;//暂停
+    QAction *closeWin;//关闭软件
 
     void setInterfaceMenu();
     void setInterfaceLayout();
+    void setSystemTray();
+    void setTrayTips();
 };
 
 #endif // MUSICPLAYER_H

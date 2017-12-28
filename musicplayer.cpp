@@ -8,13 +8,14 @@ MusicPlayer::MusicPlayer(QWidget *parent):
 
     /* 全局变量初始化 */
     musicNameLabel = new QLabel();
-    trayicon = new QSystemTrayIcon(QIcon(":images/icon.png"));
 
     /* 界面初始化 */
     this->setInterfaceMenu();
     this->setInterfaceLayout();
-    QPalette palette;
+    this->setSystemTray();
     this->setAutoFillBackground(true);
+
+    QPalette palette;
 #if 0
     QPixmap pix1(":images/4.png");
     pix1 = pix1.scaled(this->width(),this->height());
@@ -25,7 +26,7 @@ MusicPlayer::MusicPlayer(QWidget *parent):
     this->setPalette(palette);
 
     playlist = new QMediaPlaylist();
-    playlist->setPlaybackMode(QMediaPlaylist::Random);
+    playlist->setPlaybackMode(QMediaPlaylist::Loop);
     player = new QMediaPlayer();
     player->setPlaylist(playlist);
     player->setVolume(50);
@@ -33,22 +34,23 @@ MusicPlayer::MusicPlayer(QWidget *parent):
     timer->setInterval(5000);
 
 
-    connect(timer,SIGNAL(timeout()),this,SLOT(changslider()));
-    connect(playstyleCombox,SIGNAL(currentIndexChanged(int)),this,SLOT(changplaystyle(int)));
+    connect(timer,SIGNAL(timeout()),this,SLOT(changeSlider()));
+    connect(playstyleCombox,SIGNAL(currentIndexChanged(int)),this,SLOT(changePlaystyle(int)));
     connect(skinBtn,SIGNAL(clicked()),this,SLOT(changeSkin()));
-    connect(addmusicBtn,SIGNAL(clicked(bool)),this,SLOT(readfile()));
-    connect(stopBtn,SIGNAL(clicked(bool)),this,SLOT(playstop()));
-    connect(playBtn,SIGNAL(clicked(bool)),this,SLOT(playstate()));
-    connect(nextBtn,SIGNAL(clicked(bool)),this,SLOT(nextplay()));
-    connect(lastBtn,SIGNAL(clicked(bool)),this,SLOT(lastplay()));
+    connect(addmusicBtn,SIGNAL(clicked(bool)),this,SLOT(readFile()));
+    connect(stopBtn,SIGNAL(clicked(bool)),this,SLOT(playStop()));
+    connect(playBtn,SIGNAL(clicked(bool)),this,SLOT(playStart()));
+    connect(nextBtn,SIGNAL(clicked(bool)),this,SLOT(nextMusic()));
+    connect(lastBtn,SIGNAL(clicked(bool)),this,SLOT(prevMusic()));
     connect(tableWidget,SIGNAL(cellDoubleClicked(int,int)),this,SLOT(changeMusic(int,int)));
     connect(playlist,SIGNAL(currentIndexChanged(int)),this,SLOT(updateMusicNameLabel(int)));
-    connect(playlist,SIGNAL(currentIndexChanged(int)),this,SLOT(updateslider()));
+    connect(playlist,SIGNAL(currentIndexChanged(int)),this,SLOT(updateSlider()));
+    connect(systemTray,SIGNAL(activated(QSystemTrayIcon::ActivationReason)),this,SLOT(systemTrayOperation(QSystemTrayIcon::ActivationReason)));
 }
 
 MusicPlayer::~MusicPlayer()
 {
-
+    //delete trayMenu;
 }
 
 void MusicPlayer::mouseMoveEvent(QMouseEvent *event)
@@ -63,29 +65,28 @@ void MusicPlayer::mousePressEvent(QMouseEvent *event)
     this->dpos = mousePos - windowPos;       // 移动后部件所在的位置
 }
 
-void MusicPlayer::changslider()
+void MusicPlayer::changeSlider()
 {
     int i = slider->value();
     slider->setValue(++i);
 }
 
 
-void MusicPlayer::changplaystyle(int)
+void MusicPlayer::changePlaystyle(int index)
 {
-    int i = playstyleCombox->currentIndex();
-    switch (i)
+    switch (index)
     {
-    case 1:
+    case 0:
         playlist->setPlaybackMode(QMediaPlaylist::Loop);
         break;
-    case 2:
-        playlist->setPlaybackMode(QMediaPlaylist::CurrentItemInLoop);
+    case 1:
+        playlist->setPlaybackMode(QMediaPlaylist::Sequential);
         break;
-    case 3:
+    case 2:
         playlist->setPlaybackMode(QMediaPlaylist::Random);
         break;
-    case 4:
-        playlist->setPlaybackMode(QMediaPlaylist::CurrentItemOnce);
+    case 3:
+        playlist->setPlaybackMode(QMediaPlaylist::CurrentItemInLoop);
         break;
     default:
         break;
@@ -94,37 +95,38 @@ void MusicPlayer::changplaystyle(int)
 
 }
 
-void MusicPlayer::playstate()
+void MusicPlayer::playStart()
 {
     player->play();
+    setTrayTips();
     timer->start();
 }
 
-void MusicPlayer::playstop()
+void MusicPlayer::playStop()
 {
     player->stop();
     timer->stop();
 }
 
-void MusicPlayer::nextplay()
+void MusicPlayer::nextMusic()
 {
-    int i=playlist->currentIndex();
+    int i = playlist->currentIndex();
     //QString name=playlist->currentMedia();
     if(++i == playlist->mediaCount())
     {
         i = 0;
     }
     playlist->setCurrentIndex(i);
-    //playstate();
+    //playStart();
     player->play();
     //  musicNameLabel->setText(name);
-
+    setTrayTips();
     timer->start();
 
 }
 
 
-void MusicPlayer::lastplay()
+void MusicPlayer::prevMusic()
 {
     int i = playlist->currentIndex();
     if(--i < 0)
@@ -132,12 +134,12 @@ void MusicPlayer::lastplay()
         i = 0;
     }
     playlist->setCurrentIndex(i);
-    //playstate();
     player->play();
+    setTrayTips();
     timer->start();
 }
 
-QStringList MusicPlayer::readfile()
+QStringList MusicPlayer::readFile()
 {
     QStringList musicList=QFileDialog::getOpenFileNames(this,tr("选择文件"),QCoreApplication::applicationDirPath() + "/music",tr("music file(*.mp3)"));
     for(int i=0; i < musicList.count(); i++)
@@ -159,6 +161,7 @@ void MusicPlayer::changeMusic(int index, int )
     timer->stop();
     playlist->setCurrentIndex(index);
     player->play();
+    setTrayTips();
     timer->start();
 }
 
@@ -179,7 +182,7 @@ void MusicPlayer::updateMusicNameLabel(int index)
     musicNameLabel->setText(tableWidget->item(index,0)->text());
 }
 
-void MusicPlayer::updateslider()
+void MusicPlayer::updateSlider()
 {
     slider->setValue(0);
 }
@@ -298,4 +301,109 @@ void MusicPlayer::setInterfaceLayout()
     hLayout->addStretch();
     hLayout->addWidget(playstyleCombox);
     vLayout->addLayout(hLayout);
+}
+
+void MusicPlayer::systemTrayOperation(QSystemTrayIcon::ActivationReason reason)
+{
+    switch (reason) {
+    case QSystemTrayIcon::Context:
+        showTrayMenu();
+        break;
+    case QSystemTrayIcon::DoubleClick:
+        showWindow();
+        break;
+    case QSystemTrayIcon::Trigger:
+        break;
+    default:
+        break;
+    }
+}
+
+void MusicPlayer::setSystemTray()
+{
+    systemTray = new QSystemTrayIcon(QIcon(":images/icon.png"));
+    trayMenu = new QMenu(this);
+    showWin = new QAction(trayMenu);
+    prevOne = new QAction(trayMenu);
+    nextOne = new QAction(trayMenu);
+    startOne = new QAction(trayMenu);
+    stopOne = new QAction(trayMenu);
+    closeWin = new QAction(trayMenu);
+
+    showWin->setText(tr("显示界面"));
+    prevOne->setText(tr("上一首"));
+    prevOne->setIcon(QIcon(":images/skipBackward.png"));
+    nextOne->setText(tr("下一首"));
+    nextOne->setIcon(QIcon(":images/skipForward.png"));
+    startOne->setText(tr("开始"));
+    startOne->setIcon(QIcon(":images/play.png"));
+    stopOne->setText(tr("暂停"));
+    stopOne->setIcon(QIcon(":images/pause.png"));
+    closeWin->setText(tr("退出"));
+    closeWin->setIcon(QIcon(":images/close.png"));
+
+    trayMenu->addAction(showWin);
+    trayMenu->addAction(prevOne);
+    trayMenu->addAction(startOne);
+    trayMenu->addAction(stopOne);
+    trayMenu->addAction(nextOne);
+    trayMenu->addAction(closeWin);
+    systemTray->setContextMenu(trayMenu);
+
+    connect(showWin,SIGNAL(triggered(bool)),this,SLOT(showWindow()));
+    connect(prevOne,SIGNAL(triggered(bool)),this,SLOT(prevMusic()));
+    connect(startOne,SIGNAL(triggered(bool)),this,SLOT(playStart()));
+    connect(stopOne,SIGNAL(triggered(bool)),this,SLOT(playStop()));
+    connect(nextOne,SIGNAL(triggered(bool)),this,SLOT(nextMusic()));
+    connect(closeWin,SIGNAL(triggered(bool)),this,SLOT(closeWindow()));
+}
+
+void MusicPlayer::showTrayMenu()
+{
+    trayMenu->show();
+}
+
+void MusicPlayer::showWindow()
+{
+    this->setWindowFlags(Qt::WindowStaysOnTopHint);
+    this->show();
+}
+
+void MusicPlayer::closeWindow()
+{
+   this->close();
+}
+
+void MusicPlayer::closeEvent(QCloseEvent *event)
+{
+    if(this->isHidden())
+    {
+        systemTray->hide();
+        delete systemTray;
+        event->accept();
+    }
+    else
+    {
+        switch( QMessageBox::information(this,tr("提示"),tr("您确定关闭软件吗?\n\n点击\"取消\"将最小化至托盘"),tr("确定"), tr("取消"),0,1))
+        {
+        case 0:
+            systemTray->hide();
+            delete systemTray;
+            event->accept();
+            break;
+        case 1:
+            event->ignore();
+            this->hide();
+            systemTray->show();
+            break;
+        default:
+            break;
+        }
+    }
+}
+
+void MusicPlayer::setTrayTips()
+{
+    systemTray->setToolTip(player->metaData(QMediaMetaData::Title).toString());
+
 }
