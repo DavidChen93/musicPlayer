@@ -2,6 +2,7 @@
 *.pro.user.*
 debug/
 release/
+deploy/
 Makefile
 Makefile.*
 ui_*.h

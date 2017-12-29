@@ -1,5 +1,7 @@
 #include "musicplayer.h"
 
+#define isdebug  0 // 1为调试，0为release
+
 MusicPlayer::MusicPlayer(QWidget *parent):
     QWidget(parent)
 {
@@ -46,7 +48,9 @@ MusicPlayer::MusicPlayer(QWidget *parent):
     connect(playlist,SIGNAL(currentIndexChanged(int)),this,SLOT(updateMusicNameLabel(int)));
     connect(playlist,SIGNAL(currentIndexChanged(int)),this,SLOT(updateSlider()));
     connect(systemTray,SIGNAL(activated(QSystemTrayIcon::ActivationReason)),this,SLOT(systemTrayOperation(QSystemTrayIcon::ActivationReason)));
+#if isdebug
     connect(testBtn,SIGNAL(clicked(bool)),this,SLOT(testWindow()));
+#endif
 }
 
 MusicPlayer::~MusicPlayer()
@@ -280,11 +284,13 @@ void MusicPlayer::setInterfaceMenu()
     slider->setValue(0);
     slider->setMaximum(100);
 
+#if isdebug
     /* 测试按钮 */
     testBtn = new QPushButton();
     testBtn->setFlat(true);
     testBtn->setText(tr("测试"));
     testBtn->setFixedSize(25,25);
+#endif
 }
 
 void MusicPlayer::setInterfaceLayout()
@@ -312,8 +318,10 @@ void MusicPlayer::setInterfaceLayout()
     hLayout->addWidget(skinBtn);
     hLayout->addStretch();
     hLayout->addWidget(playstyleCombox);
+#if isdebug
     hLayout->addStretch();
     hLayout->addWidget(testBtn);
+#endif
     vLayout->addLayout(hLayout);
 }
 
