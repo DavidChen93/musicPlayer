@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui multimedia
+QT       += core gui multimedia sql
 QT += multimediawidgets
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -14,10 +14,12 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         musicplayer.cpp \
-    msgbox.cpp
+    msgbox.cpp \
+    database.cpp
 
 HEADERS  += musicplayer.h \
-    msgbox.h
+    msgbox.h \
+    database.h
 
 RESOURCES += \
     icon.qrc
