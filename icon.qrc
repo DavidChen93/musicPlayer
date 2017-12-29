@@ -11,5 +11,6 @@
         <file>images/skin.png</file>
         <file>images/volume.png</file>
         <file>images/4.png</file>
+        <file>images/tip.png</file>
     </qresource>
 </RCC>

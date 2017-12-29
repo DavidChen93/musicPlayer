@@ -13,9 +13,11 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        musicplayer.cpp
+        musicplayer.cpp \
+    msgbox.cpp
 
-HEADERS  += musicplayer.h
+HEADERS  += musicplayer.h \
+    msgbox.h
 
 RESOURCES += \
-    image.qrc
+    icon.qrc

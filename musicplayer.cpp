@@ -46,6 +46,7 @@ MusicPlayer::MusicPlayer(QWidget *parent):
     connect(playlist,SIGNAL(currentIndexChanged(int)),this,SLOT(updateMusicNameLabel(int)));
     connect(playlist,SIGNAL(currentIndexChanged(int)),this,SLOT(updateSlider()));
     connect(systemTray,SIGNAL(activated(QSystemTrayIcon::ActivationReason)),this,SLOT(systemTrayOperation(QSystemTrayIcon::ActivationReason)));
+    connect(testBtn,SIGNAL(clicked(bool)),this,SLOT(testWindow()));
 }
 
 MusicPlayer::~MusicPlayer()
@@ -98,7 +99,6 @@ void MusicPlayer::changePlaystyle(int index)
 void MusicPlayer::playStart()
 {
     player->play();
-    setTrayTips();
     timer->start();
 }
 
@@ -119,8 +119,7 @@ void MusicPlayer::nextMusic()
     playlist->setCurrentIndex(i);
     //playStart();
     player->play();
-    //  musicNameLabel->setText(name);
-    setTrayTips();
+    //musicNameLabel->setText(name);
     timer->start();
 
 }
@@ -135,7 +134,6 @@ void MusicPlayer::prevMusic()
     }
     playlist->setCurrentIndex(i);
     player->play();
-    setTrayTips();
     timer->start();
 }
 
@@ -145,7 +143,8 @@ QStringList MusicPlayer::readFile()
     for(int i=0; i < musicList.count(); i++)
     {
         QString musicPath = musicList.at(i);
-        QString musicInfo = musicPath.split("/").last();
+        //QString musicInfo = musicPath.split("/").last();
+        QString musicInfo = getMusicInfo(musicPath);
         playlist->addMedia(QUrl::fromLocalFile(musicPath));
         int rowNum = tableWidget->rowCount();
         tableWidget->insertRow(rowNum);
@@ -156,12 +155,17 @@ QStringList MusicPlayer::readFile()
     return musicList;
 }
 
+QString MusicPlayer::getMusicInfo(QString str)
+{
+    QString str1 = str.split("/").last();
+    return str1;
+}
+
 void MusicPlayer::changeMusic(int index, int )
 {
     timer->stop();
     playlist->setCurrentIndex(index);
     player->play();
-    setTrayTips();
     timer->start();
 }
 
@@ -179,7 +183,9 @@ void MusicPlayer::changeSkin()
 
 void MusicPlayer::updateMusicNameLabel(int index)
 {
-    musicNameLabel->setText(tableWidget->item(index,0)->text());
+    QString musicName = tableWidget->item(index,0)->text();
+    musicNameLabel->setText(musicName);
+    systemTray->setToolTip(musicName);
 }
 
 void MusicPlayer::updateSlider()
@@ -273,6 +279,12 @@ void MusicPlayer::setInterfaceMenu()
     slider = new QSlider(Qt::Horizontal);
     slider->setValue(0);
     slider->setMaximum(100);
+
+    /* 测试按钮 */
+    testBtn = new QPushButton();
+    testBtn->setFlat(true);
+    testBtn->setText(tr("测试"));
+    testBtn->setFixedSize(25,25);
 }
 
 void MusicPlayer::setInterfaceLayout()
@@ -300,6 +312,8 @@ void MusicPlayer::setInterfaceLayout()
     hLayout->addWidget(skinBtn);
     hLayout->addStretch();
     hLayout->addWidget(playstyleCombox);
+    hLayout->addStretch();
+    hLayout->addWidget(testBtn);
     vLayout->addLayout(hLayout);
 }
 
@@ -402,8 +416,12 @@ void MusicPlayer::closeEvent(QCloseEvent *event)
     }
 }
 
-void MusicPlayer::setTrayTips()
+void MusicPlayer::testWindow()
 {
-    systemTray->setToolTip(player->metaData(QMediaMetaData::Title).toString());
+    MsgBox *testMsgBox = new MsgBox(this);
+    testMsgBox->setInfo(tr("测试"),tr("测试"),QPixmap(":/images/tip.png"),false,false);
+    testMsgBox->exec();
 
+    connect(testMsgBox,SIGNAL(okMessageHidden(bool)),this,SLOT());
+    connect(testMsgBox,SIGNAL(msgChecked(bool,bool)),this,SLOT());
 }

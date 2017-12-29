@@ -36,6 +36,7 @@
 #include <QCoreApplication>
 #include <QMediaMetaData>
 #include <QMessageBox>
+#include <msgbox.h>
 
 class MusicPlayer : public QWidget
 {
@@ -72,6 +73,7 @@ public slots:
     void showTrayMenu();
     void showWindow();
     void closeWindow();
+    void testWindow();
 
 private:
     QTimer* timer;
@@ -81,7 +83,7 @@ private:
     QPoint windowPos;
     QPoint  mousePos;
 
-    QPushButton* windowminBtn;//最小化
+    QPushButton* testBtn;//测试按钮
     QPushButton* lastBtn;//上一首
     QPushButton* playBtn;//播放
     QPushButton* stopBtn;//停止
@@ -112,7 +114,7 @@ private:
     void setInterfaceMenu();
     void setInterfaceLayout();
     void setSystemTray();
-    void setTrayTips();
+    QString getMusicInfo(QString);
 };
 
 #endif // MUSICPLAYER_H
