@@ -10,6 +10,7 @@ MusicPlayer::MusicPlayer(QWidget *parent):
 
     /* 全局变量初始化 */
     musicNameLabel = new QLabel();
+    //db = QSqlDatabase::addDatabase("QSQLITE");
 
     /* 界面初始化 */
     this->setInterfaceMenu();
@@ -51,6 +52,7 @@ MusicPlayer::MusicPlayer(QWidget *parent):
 #if isdebug
     connect(testBtn,SIGNAL(clicked(bool)),this,SLOT(testWindow()));
 #endif
+    autoScanFiles();
 }
 
 MusicPlayer::~MusicPlayer()
@@ -433,3 +435,33 @@ void MusicPlayer::testWindow()
     connect(testMsgBox,SIGNAL(okMessageHidden(bool)),this,SLOT());
     connect(testMsgBox,SIGNAL(msgChecked(bool,bool)),this,SLOT());
 }
+
+void MusicPlayer::autoScanFiles()
+{
+    int i = 0;
+    QDir dir(QCoreApplication::applicationDirPath()+"/music");//定义一个QDir变量,设置路径为当前目录的music文件夹(这里可用绝对路径也可以用相对路径)
+    QStringList songList;//用来保存歌曲名的表
+    QFileInfoList fileInfoList;//文件信息表
+    QFileInfo fileInfo;//文件信息变量
+    QString songInfo;//用于保存文件信息字符串
+
+    songList << "*.mp3";
+    dir.setNameFilters(songList);
+    fileInfoList = dir.entryInfoList();
+    while( i < fileInfoList.length() ){
+        fileInfo = fileInfoList.at(i);
+        songInfo = fileInfo.filePath();
+
+        playlist->addMedia(QUrl::fromLocalFile(songInfo));
+        QString musicInfo = songInfo.split("/").last();
+        int rowNum = tableWidget->rowCount();
+        tableWidget->insertRow(rowNum);
+        tableWidget->setItem(rowNum,0,new QTableWidgetItem(musicInfo.split(".").first()));
+        tableWidget->setItem(rowNum,1,new QTableWidgetItem(musicInfo.split(".").last()));
+        tableWidget->setRowHeight(rowNum,20);
+
+        songList << songInfo;
+        i++;
+    }
+}
+

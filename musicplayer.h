@@ -37,6 +37,10 @@
 #include <QMediaMetaData>
 #include <QMessageBox>
 #include <msgbox.h>
+#include <QSqlDatabase>
+#include <QSqlQuery>
+#include <QSqlRecord>
+
 
 class MusicPlayer : public QWidget
 {
@@ -83,6 +87,7 @@ private:
     QPoint windowPos;
     QPoint  mousePos;
 
+    /* 界面布局相关 */
     QPushButton* testBtn;//测试按钮
     QPushButton* lastBtn;//上一首
     QPushButton* playBtn;//播放
@@ -111,10 +116,17 @@ private:
     QAction *stopOne;//暂停
     QAction *closeWin;//关闭软件
 
+    /* 数据库相关 */
+    QSqlDatabase *db;//数据库
+
+    /* 目录扫描相关 */
+    //QStringList songList;//用来保存歌曲名的表
+
     void setInterfaceMenu();
     void setInterfaceLayout();
     void setSystemTray();
     QString getMusicInfo(QString);
+    void autoScanFiles();
 };
 
 #endif // MUSICPLAYER_H
