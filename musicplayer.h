@@ -54,7 +54,7 @@ public:
     void mouseMoveEvent(QMouseEvent *);
     void mousePressEvent(QMouseEvent *);
 
-    //bool playStatus;//目前歌曲播放状态
+    bool isPlaying;//目前歌曲播放状态
 
 protected:
 //    void closeEvent(QCloseEvent *);
@@ -78,6 +78,8 @@ public slots:
     void showWindow();
     void closeWindow();
     void testWindow();
+
+    void changeMusicNameLabel(bool);
 
 private:
     QTimer* timer;
@@ -127,6 +129,8 @@ private:
     void setSystemTray();
     QString getMusicInfo(QString);
     void autoScanFiles();
+    void checkPlayStatus();
+    void updateMusicNameLabel();
 };
 
 #endif // MUSICPLAYER_H

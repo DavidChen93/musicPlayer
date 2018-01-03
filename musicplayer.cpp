@@ -11,6 +11,7 @@ MusicPlayer::MusicPlayer(QWidget *parent):
     /* 全局变量初始化 */
     musicNameLabel = new QLabel();
     //db = QSqlDatabase::addDatabase("QSQLITE");
+    isPlaying = false;
 
     /* 界面初始化 */
     this->setInterfaceMenu();
@@ -46,13 +47,14 @@ MusicPlayer::MusicPlayer(QWidget *parent):
     connect(nextBtn,SIGNAL(clicked(bool)),this,SLOT(nextMusic()));
     connect(lastBtn,SIGNAL(clicked(bool)),this,SLOT(prevMusic()));
     connect(tableWidget,SIGNAL(cellDoubleClicked(int,int)),this,SLOT(changeMusic(int,int)));
+    connect(player,SIGNAL(videoAvailableChanged(bool)),this,SLOT(changeMusicNameLanel(bool)));
     connect(playlist,SIGNAL(currentIndexChanged(int)),this,SLOT(updateMusicNameLabel(int)));
     connect(playlist,SIGNAL(currentIndexChanged(int)),this,SLOT(updateSlider()));
     connect(systemTray,SIGNAL(activated(QSystemTrayIcon::ActivationReason)),this,SLOT(systemTrayOperation(QSystemTrayIcon::ActivationReason)));
 #if isdebug
     connect(testBtn,SIGNAL(clicked(bool)),this,SLOT(testWindow()));
 #endif
-    autoScanFiles();
+    this->autoScanFiles();
 }
 
 MusicPlayer::~MusicPlayer()
@@ -104,14 +106,28 @@ void MusicPlayer::changePlaystyle(int index)
 
 void MusicPlayer::playStart()
 {
-    player->play();
-    timer->start();
+    if(isPlaying)
+    {
+        isPlaying = false;
+        player->pause();
+    }
+    else
+    {
+        isPlaying = true;
+        player->play();
+        qDebug()<<player->metaData("Title");
+    }
+    this->checkPlayStatus();
+    //player->play();
+    //timer->start();
 }
 
 void MusicPlayer::playStop()
 {
+    isPlaying = false;
+    this->checkPlayStatus();
     player->stop();
-    timer->stop();
+    //timer->stop();
 }
 
 void MusicPlayer::nextMusic()
@@ -125,6 +141,8 @@ void MusicPlayer::nextMusic()
     playlist->setCurrentIndex(i);
     //playStart();
     player->play();
+    isPlaying = true;
+    this->checkPlayStatus();
     //musicNameLabel->setText(name);
     timer->start();
 
@@ -140,6 +158,8 @@ void MusicPlayer::prevMusic()
     }
     playlist->setCurrentIndex(i);
     player->play();
+    isPlaying = true;
+    this->checkPlayStatus();
     timer->start();
 }
 
@@ -203,7 +223,7 @@ void MusicPlayer::setInterfaceMenu()
 {
     /* 上一首 */
     lastBtn = new QPushButton();
-    lastBtn->setStyleSheet("QPushButton{border-image : url(:images/skipBackward.png);}");
+    lastBtn->setStyleSheet("QPushButton{border-image : url(:images/previous.png);}");
     lastBtn->setToolTip(tr("上一首"));
     lastBtn->setFixedSize(25,25);
     lastBtn->setFlat(true);
@@ -215,16 +235,16 @@ void MusicPlayer::setInterfaceMenu()
     playBtn->setFlat(true);
     playBtn->setToolTip(tr("播放"));
 
-    /* 暂停 */
+    /* 停止 */
     stopBtn = new QPushButton();
     stopBtn->setStyleSheet("QPushButton{border-image : url(:images/stop.png);}");
-    stopBtn->setToolTip(tr("暂停"));
+    stopBtn->setToolTip(tr("停止"));
     stopBtn->setFixedSize(25,25);
     stopBtn->setFlat(true);
 
     /* 下一首 */
     nextBtn = new QPushButton();
-    nextBtn->setStyleSheet("QPushButton{border-image : url(:images/skipForward.png);}");
+    nextBtn->setStyleSheet("QPushButton{border-image : url(:images/next.png);}");
     nextBtn->setToolTip(tr("下一首"));
     nextBtn->setFixedSize(25,25);
     nextBtn->setFlat(true);
@@ -356,15 +376,15 @@ void MusicPlayer::setSystemTray()
 
     showWin->setText(tr("显示界面"));
     prevOne->setText(tr("上一首"));
-    prevOne->setIcon(QIcon(":images/skipBackward.png"));
+    prevOne->setIcon(QIcon(":images/previous2.png"));
     nextOne->setText(tr("下一首"));
-    nextOne->setIcon(QIcon(":images/skipForward.png"));
+    nextOne->setIcon(QIcon(":images/next2.png"));
     startOne->setText(tr("开始"));
-    startOne->setIcon(QIcon(":images/play.png"));
+    startOne->setIcon(QIcon(":images/play2.png"));
     stopOne->setText(tr("暂停"));
-    stopOne->setIcon(QIcon(":images/pause.png"));
+    stopOne->setIcon(QIcon(":images/pause2.png"));
     closeWin->setText(tr("退出"));
-    closeWin->setIcon(QIcon(":images/close.png"));
+    //closeWin->setIcon(QIcon(":images/close.png"));
 
     trayMenu->addAction(showWin);
     trayMenu->addAction(prevOne);
@@ -465,3 +485,31 @@ void MusicPlayer::autoScanFiles()
     }
 }
 
+void MusicPlayer::checkPlayStatus()
+{
+    if(isPlaying)
+    {
+        playBtn->setStyleSheet("QPushButton{border-image : url(:images/pause.png);}");
+        playBtn->setToolTip("暂停");
+    }
+    else
+    {
+        playBtn->setStyleSheet("QPushButton{border-image : url(:images/play.png);}");
+        playBtn->setToolTip("开始");
+    }
+}
+
+void MusicPlayer::changeMusicNameLabel(bool available)
+{
+#if 0
+    if(available)
+    {
+        foreach(QString str,availableMetaData())
+        {
+            qDebug()<<str<<"   :"<<metaData(str).toString().toUtf8().data();
+        }
+        playlist->setCurrentIndex(++count);
+        qDebug()<<"";
+    }
+#endif
+}
