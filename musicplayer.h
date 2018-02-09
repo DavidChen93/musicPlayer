@@ -40,6 +40,7 @@
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QSqlRecord>
+#include <settingdialog.h>
 
 
 class MusicPlayer : public QWidget
@@ -57,7 +58,6 @@ public:
     bool isPlaying;//目前歌曲播放状态
 
 protected:
-//    void closeEvent(QCloseEvent *);
     void closeEvent(QCloseEvent *event);
 
 public slots:
@@ -98,6 +98,7 @@ private:
     QPushButton* volumeBtn;//音量
     QPushButton* addmusicBtn;//添加歌曲
     QPushButton* skinBtn;//换肤
+    QPushButton* settingBtn;//设置
     QSlider* slider;
     QComboBox* playstyleCombox;
     QHBoxLayout* hLayout;
@@ -116,6 +117,7 @@ private:
     QAction *nextOne;//下一曲
     QAction *startOne;//开始
     QAction *stopOne;//暂停
+    QAction *setting;//设置
     QAction *closeWin;//关闭软件
 
     /* 数据库相关 */

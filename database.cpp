@@ -1,4 +1,4 @@
-#include "database.h"
+﻿#include "database.h"
 
 
 //建立一个数据库连接

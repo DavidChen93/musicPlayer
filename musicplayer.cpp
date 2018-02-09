@@ -1,4 +1,4 @@
-#include "musicplayer.h"
+﻿#include "musicplayer.h"
 
 #define isdebug  0 // 1为调试，0为release
 
@@ -47,7 +47,7 @@ MusicPlayer::MusicPlayer(QWidget *parent):
     connect(nextBtn,SIGNAL(clicked(bool)),this,SLOT(nextMusic()));
     connect(lastBtn,SIGNAL(clicked(bool)),this,SLOT(prevMusic()));
     connect(tableWidget,SIGNAL(cellDoubleClicked(int,int)),this,SLOT(changeMusic(int,int)));
-    connect(player,SIGNAL(videoAvailableChanged(bool)),this,SLOT(changeMusicNameLanel(bool)));
+    connect(player,SIGNAL(videoAvailableChanged(bool)),this,SLOT(changeMusicNameLabel(bool)));
     connect(playlist,SIGNAL(currentIndexChanged(int)),this,SLOT(updateMusicNameLabel(int)));
     connect(playlist,SIGNAL(currentIndexChanged(int)),this,SLOT(updateSlider()));
     connect(systemTray,SIGNAL(activated(QSystemTrayIcon::ActivationReason)),this,SLOT(systemTrayOperation(QSystemTrayIcon::ActivationReason)));
@@ -212,6 +212,7 @@ void MusicPlayer::updateMusicNameLabel(int index)
     QString musicName = tableWidget->item(index,0)->text();
     musicNameLabel->setText(musicName);
     systemTray->setToolTip(musicName);
+    //qDebug()<<player->metaData("Title");
 }
 
 void MusicPlayer::updateSlider()
@@ -266,9 +267,16 @@ void MusicPlayer::setInterfaceMenu()
     /* 换皮肤 */
     skinBtn = new QPushButton();\
     skinBtn->setStyleSheet("QPushButton{border-image : url(:images/skin.png);}");
-    skinBtn->setToolTip(tr("皮肤"));
+    skinBtn->setToolTip(tr("换肤"));
     skinBtn->setFixedSize(25,25);
     skinBtn->setFlat(true);
+
+    /* 设置 */
+    settingBtn = new QPushButton();\
+    settingBtn->setStyleSheet("QPushButton{border-image : url(:images/setting.png);}");
+    settingBtn->setToolTip(tr("设置"));
+    settingBtn->setFixedSize(25,25);
+    settingBtn->setFlat(true);
 
     /* 播放方式 */
     playstyleCombox = new QComboBox();
@@ -339,6 +347,8 @@ void MusicPlayer::setInterfaceLayout()
     hLayout->addStretch();
     hLayout->addWidget(skinBtn);
     hLayout->addStretch();
+    hLayout->addWidget(settingBtn);
+    hLayout->addStretch();
     hLayout->addWidget(playstyleCombox);
 #if isdebug
     hLayout->addStretch();
@@ -372,6 +382,7 @@ void MusicPlayer::setSystemTray()
     nextOne = new QAction(trayMenu);
     startOne = new QAction(trayMenu);
     stopOne = new QAction(trayMenu);
+    setting = new QAction(trayMenu);
     closeWin = new QAction(trayMenu);
 
     showWin->setText(tr("显示界面"));
@@ -383,14 +394,16 @@ void MusicPlayer::setSystemTray()
     startOne->setIcon(QIcon(":images/play2.png"));
     stopOne->setText(tr("暂停"));
     stopOne->setIcon(QIcon(":images/pause2.png"));
+    setting->setText(tr("设置"));
     closeWin->setText(tr("退出"));
-    //closeWin->setIcon(QIcon(":images/close.png"));
+
 
     trayMenu->addAction(showWin);
     trayMenu->addAction(prevOne);
     trayMenu->addAction(startOne);
     trayMenu->addAction(stopOne);
     trayMenu->addAction(nextOne);
+    trayMenu->addAction(setting);
     trayMenu->addAction(closeWin);
     systemTray->setContextMenu(trayMenu);
 
@@ -512,4 +525,6 @@ void MusicPlayer::changeMusicNameLabel(bool available)
         qDebug()<<"";
     }
 #endif
+    //playlist->setCurrentIndex(++);
+    qDebug()<<player->metaData("Title").toString()<<player->metaData("Author").toString();
 }

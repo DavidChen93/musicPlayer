@@ -15,11 +15,16 @@ TEMPLATE = app
 SOURCES += main.cpp\
         musicplayer.cpp \
     msgbox.cpp \
-    database.cpp
+    database.cpp \
+    settingdialog.cpp
 
 HEADERS  += musicplayer.h \
     msgbox.h \
-    database.h
+    database.h \
+    settingdialog.h
 
 RESOURCES += \
     icon.qrc
+
+FORMS += \
+    settingdialog.ui
