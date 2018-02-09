@@ -16,12 +16,14 @@ SOURCES += main.cpp\
         musicplayer.cpp \
     msgbox.cpp \
     database.cpp \
-    settingdialog.cpp
+    settingdialog.cpp \
+    common.cpp
 
 HEADERS  += musicplayer.h \
     msgbox.h \
     database.h \
-    settingdialog.h
+    settingdialog.h \
+    common.h
 
 RESOURCES += \
     icon.qrc
